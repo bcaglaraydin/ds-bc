@@ -326,7 +326,7 @@ def ls_l1(x, y, lam, alpha=0.0001) -> np.ndarray:
     beta = np.random.random(2)
 
     for i in range(1000):
-        y_pred: np.ndarray = beta[0] + beta[1] * x
+
 
         if beta[0] >= 0:
             g_b0 = -2 * (y - y_pred).sum() + lam
