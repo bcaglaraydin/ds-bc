@@ -10,6 +10,7 @@ from sklearn.metrics import mean_squared_error
 
 def custom_loss(y_pred, y_true, b1, b0, t, lam):
     err = np.power((y_pred - y_true), 2).mean() + lam * np.linalg.norm(np.array([b0, b1]))
+    print("loss", err)
     return t if err >= t else err
 
 
@@ -17,23 +18,27 @@ def regression_model(x, y, thresh, alpha=0.01, max_iter=1000000, lam=0.5):
     b = np.random.random(2)
     for i in range(max_iter):
         y_pred = b[0] + b[1] * x
-        if custom_loss(y_pred=y_pred, y_true=y, t=thresh, lam=lam, b0=b[0], b1=b[1]) == thresh:
-            st.header("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            g_b0 = 0
-            g_b1 = 0
-        else:
-            g_b0 = -2 * (y - y_pred).mean() + 2 * lam * b[0]
-            g_b1 = -2 * (x * (y - y_pred)).mean() + 2 * lam * b[1]
+        loss = custom_loss(y_pred=y_pred, y_true=y, t=thresh, lam=lam, b0=b[0], b1=b[1])
 
-        # print(f"({i}) beta: {b}, gradient: {g_b0} {g_b1}, g_size:{np.linalg.norm(g_b0 - g_b1)}")
+        # if loss >= thresh:
+        #
+        #     g_b0 = 1
+        #     g_b1 = 1
+        # else:
+        g_b0 = -2 * (y - y_pred).mean() + 2 * lam * b[0]
+        g_b1 = -2 * (x * (y - y_pred)).mean() + 2 * lam * b[1]
+
+        print(f"({i}) beta: {b}, gradient: {g_b0} {g_b1}, g_size:{np.linalg.norm(g_b0 - g_b1)}")
 
         b_prev = np.copy(b)
+
         b[0] = b[0] - alpha * g_b0
         b[1] = b[1] - alpha * g_b1
 
         if np.linalg.norm(b - b_prev) < 0.000001:
             st.markdown(fr"{i} iterations")
             break
+
 
     return b
 
@@ -99,39 +104,19 @@ def convex_check(X, y, thresh):
     # st.plotly_chart(fig, use_container_width=True)
 
 
-def make_regression(X, y, thresh, alpha_init=0.00001, alpha_end=0.001, multiple=False, lam=0.05, lam_max=2):
-    if multiple:
-        while alpha_init < alpha_end:
-            while lam < lam_max:
-                st.markdown(fr"alpha: {alpha_init}")
-                st.markdown(fr"lambda: {lam}")
-                # print("alpha:", alpha_init)
-                # print("alpha:", alpha_init)
-                beta = regression_model(X, y, thresh, alpha=alpha_init, lam=lam)
-                y_pred = beta[1] * X - beta[0]
-                mse = mean_squared_error(y, y_pred)
-                st.markdown(fr"mse: {mse}")
-                # print("mse:", mse)
+def make_regression(X, y, thresh, alpha=0.001, lam=0.5):
+    st.markdown(fr"alpha: {alpha}")
+    st.markdown(fr"lambda: {lam}")
+    beta = regression_model(X, y, thresh, alpha=alpha, lam=lam)
+    st.markdown(fr"b0, b1: {beta}")
+    y_pred = beta[1] * X + beta[0]
+    mse = mean_squared_error(y, y_pred)
+    st.markdown(fr"mse: {mse}")
 
-                fig = make_subplots(specs=[[{"secondary_y": True}]])
-                fig.add_trace(go.Scatter(x=X, y=y, mode="markers"), secondary_y=False)
-                fig.add_trace(go.Scatter(x=X, y=y_pred, mode="lines", name="Error fit"), secondary_y=True)
-                st.plotly_chart(fig, use_container_width=True)
-                lam += 0.5
-
-            alpha_init = alpha_init * 10
-    else:
-        print("alpha:", alpha_end)
-        beta = regression_model(X, y, thresh, alpha=alpha_end)
-        print(beta)
-        y_pred = beta[1] * X - beta[0]
-        mse = mean_squared_error(y, y_pred)
-        print("mse:", mse)
-
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
-        fig.add_trace(go.Scatter(x=X, y=y, mode="markers"), secondary_y=False)
-        fig.add_trace(go.Scatter(x=X, y=y_pred, mode="lines", name="Error fit"), secondary_y=True)
-        st.plotly_chart(fig, use_container_width=True)
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(go.Scatter(x=X, y=y, mode="markers"), secondary_y=False)
+    fig.add_trace(go.Scatter(x=X, y=y_pred, mode="lines", name="Error fit"), secondary_y=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 st.header("You Do #1")
@@ -139,14 +124,14 @@ st.subheader("Dataset")
 X, y = load_dataset()
 st.subheader("Custom Loss Function")
 st.latex(r"L(\beta_0, \beta_1, \theta) =")
-st.latex(r"\sum_{i=1}^{N}{(y_i - (\beta_0 + \beta_1 x_i))^2 } + \lambda (\beta_0^2 + \beta_1^2), (\lambda > 0) \rightarrow if \sum_{i=1}^{N}{(y_i - (\beta_0 + \beta_1 x_i))^2 } + \lambda (\beta_0^2 + \beta_1^2), (\lambda > 0) < \theta")
+st.latex(
+    r"\sum_{i=1}^{N}{(y_i - (\beta_0 + \beta_1 x_i))^2 } + \lambda (\beta_0^2 + \beta_1^2), (\lambda > 0) \rightarrow if \sum_{i=1}^{N}{(y_i - (\beta_0 + \beta_1 x_i))^2 } + \lambda (\beta_0^2 + \beta_1^2), (\lambda > 0) < \theta")
 st.latex(
     r"\theta \rightarrow if \sum_{i=1}^{N}{(y_i - (\beta_0 + \beta_1 x_i))^2 } + \lambda (\beta_0^2 + \beta_1^2), (\lambda > 0) >= \theta")
-thresh = st.slider("Loss Threshold", min_value=0, max_value=100000, value=80000, step=10000)
-convex_check(X, y, thresh)
+# thresh = st.slider("Loss Threshold", min_value=0, max_value=100000, value=80000, step=10000)
+
+convex_check(X, y, thresh=80000)
 st.subheader("Make Regression")
-
+thresh = 80000
 lam = st.slider("Regularization Multiplier for L2 (lambda)", 0.0, 3., value=0.5, step=0.5)
-multiple = st.checkbox("Make Multiple Regression")
-st.button(label="Make Regression", on_click=make_regression(X, y, thresh=thresh, alpha_end=0.001, multiple=multiple, lam=lam))
-
+make_regression(X, y, thresh=thresh, lam=lam, alpha=0.001)
