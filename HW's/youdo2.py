@@ -142,6 +142,7 @@ def model_regularized(r, alpha, max_iter, lam):
 r = read_data("large")
 r_copy, test_irow, test_jcol = create_test_data(r)
 
+#training the model
 bu, bi = model(r_copy, alpha=0.001, max_iter=1000)
 test(bu, bi, r, test_irow, test_jcol)
 
