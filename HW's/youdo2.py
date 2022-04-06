@@ -22,7 +22,7 @@ def read_data(select):
 # train test split
 def create_test_data(r):
     irow, jcol = np.where(~np.isnan(r))
-    idx = np.random.choice(np.arange(3), 3, replace=False)
+    idx = np.random.choice(np.arange(600), 100, replace=False)
     test_irow = irow[idx]
     test_jcol = jcol[idx]
 
@@ -141,8 +141,8 @@ def model_regularized(r, alpha, max_iter, lam):
 r = read_data("large")
 r_copy, test_irow, test_jcol = create_test_data(r)
 
-bu, bi = model2(r_copy, alpha=0.001, max_iter=1000)
-test2(bu, bi, r, test_irow, test_jcol)
+bu, bi = model(r_copy, alpha=0.001, max_iter=1000)
+test(bu, bi, r, test_irow, test_jcol)
 
 # hyperparameter (lambda) optimization
 lambdas = [0, 0.1, 0.5, 1, 1.5, 2]
