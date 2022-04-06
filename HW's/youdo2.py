@@ -141,8 +141,8 @@ def model_regularized(r, alpha, max_iter, lam):
 r = read_data("large")
 r_copy, test_irow, test_jcol = create_test_data(r)
 
-# bu, bi = model2(r_copy, alpha=0.001, max_iter=1000)
-# test2(bu, bi, r, test_irow, test_jcol)
+bu, bi = model2(r_copy, alpha=0.001, max_iter=1000)
+test2(bu, bi, r, test_irow, test_jcol)
 
 # hyperparameter (lambda) optimization
 lambdas = [0, 0.1, 0.5, 1, 1.5, 2]
